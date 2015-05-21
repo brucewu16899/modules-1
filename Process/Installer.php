@@ -5,41 +5,54 @@ use Illuminate\Support\Str;
 use Pingpong\Modules\Repository;
 use Symfony\Component\Process\Process;
 
-class Installer {
+class Installer
+{
 
     /**
      * The module name.
-     * 
+     *
      * @var string
      */
     protected $name;
     
     /**
      * The version of module being installed.
-     * 
+     *
      * @var string
      */
     protected $version;
 
     /**
      * The module repository instance.
-     * 
+     *
      * @var \Pingpong\Modules\Repository
      */
     protected $repository;
 
     /**
      * The console command instance.
-     * 
+     *
      * @var \Illuminate\Console\Command
      */
     protected $console;
 
+    /**
+     * The destionation path.
+     *
+     * @var string
+     */
     protected $path;
 
     /**
+     * The proccess timeout.
+     *
+     * @var integer
+     */
+    protected $timeout = 3360;
+
+    /**
      * The constructor.
-     * 
+     *
      * @param string  $name
      * @param string  $version
      * @param string  $type
@@ -55,7 +68,7 @@ class Installer {
 
     /**
      * Set destination path.
-     * 
+     *
      * @param string $path
      * @return $this
      */
@@ -68,7 +81,7 @@ class Installer {
 
     /**
      * Set the module repository instance.
-     * 
+     *
      * @param \Pingpong\Modules\Repository $repository
      * @return $this
      */
@@ -81,7 +94,7 @@ class Installer {
 
     /**
      * Set console command instance.
-     * 
+     *
      * @param \Illuminate\Console\Command $console
      * @return $this
      */
@@ -93,8 +106,21 @@ class Installer {
     }
 
     /**
+     * Set process timeout.
+     *
+     * @param  int $timeout
+     * @return $this
+     */
+    public function setTimeout($timeout)
+    {
+        $this->timeout = $timeout;
+
+        return $this;
+    }
+
+    /**
      * Run the installation process.
-     * 
+     *
      * @return \Symfony\Component\Process\Process
      */
     public function run()
@@ -117,7 +143,7 @@ class Installer {
 
     /**
      * Get destination path.
-     * 
+     *
      * @return string
      */
     public function getDestinationPath()
@@ -131,7 +157,7 @@ class Installer {
 
     /**
      * Get git repo url.
-     * 
+     *
      * @return string|null
      */
     public function getRepoUrl()
@@ -153,7 +179,7 @@ class Installer {
 
     /**
      * Get branch name.
-     * 
+     *
      * @return string
      */
     public function getBranch()
@@ -163,19 +189,19 @@ class Installer {
 
     /**
      * Get module name.
-     * 
+     *
      * @return string
      */
     public function getModuleName()
     {
         $parts = explode('/', $this->name);
 
-        return Str::studly(end($parts));   
+        return Str::studly(end($parts));
     }
 
     /**
      * Get composer package name.
-     * 
+     *
      * @return string
      */
     public function getPackageName()
@@ -189,7 +215,7 @@ class Installer {
 
     /**
      * Install the module via git.
-     * 
+     *
      * @return \Symfony\Component\Process\Process
      */
     public function installViaGit()
@@ -202,8 +228,9 @@ class Installer {
             $this->getBranch()
         ));
 
-        $process->run(function($type, $line)
-        {
+        $process->setTimeout($this->timeout);
+
+        $process->run(function ($type, $line) {
             $this->console->line($line);
         });
 
@@ -212,7 +239,7 @@ class Installer {
 
     /**
      * Install the module via git subtree.
-     * 
+     *
      * @return \Symfony\Component\Process\Process
      */
     public function installViaSubtree()
@@ -227,8 +254,9 @@ class Installer {
             $this->getBranch()
         ));
 
-        $process->run(function($type, $line)
-        {
+        $process->setTimeout($this->timeout);
+
+        $process->run(function ($type, $line) {
             $this->console->line($line);
         });
 
@@ -237,7 +265,7 @@ class Installer {
 
     /**
      * Install the module via composer.
-     * 
+     *
      * @return \Symfony\Component\Process\Process
      */
     public function installViaComposer()
@@ -248,12 +276,12 @@ class Installer {
             $this->getPackageName()
         ));
 
-        $process->run(function($type, $line)
-        {
+        $process->setTimeout($this->timeout);
+
+        $process->run(function ($type, $line) {
             $this->console->line($line);
         });
 
         return $process;
     }
-
 }

@@ -4,9 +4,8 @@ use Illuminate\Support\Str;
 use Pingpong\Support\Stub;
 use Pingpong\Modules\Traits\ModuleCommandTrait;
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputOption;
 
-class CommandCommand extends GeneratorCommand
+class MakeRequestCommand extends GeneratorCommand
 {
     use ModuleCommandTrait;
 
@@ -22,14 +21,14 @@ class CommandCommand extends GeneratorCommand
      *
      * @var string
      */
-    protected $name = 'module:make-command';
+    protected $name = 'module:make-request';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Generate new Artisan command for the specified module.';
+    protected $description = 'Generate new form request class for the specified module.';
 
     /**
      * Get the console command arguments.
@@ -39,20 +38,8 @@ class CommandCommand extends GeneratorCommand
     protected function getArguments()
     {
         return array(
-            array('name', InputArgument::REQUIRED, 'The name of the command.'),
+            array('name', InputArgument::REQUIRED, 'The name of the form request class.'),
             array('module', InputArgument::OPTIONAL, 'The name of module will be used.'),
-        );
-    }
-
-    /**
-     * Get the console command options.
-     *
-     * @return array
-     */
-    protected function getOptions()
-    {
-        return array(
-            array('command', null, InputOption::VALUE_OPTIONAL, 'The terminal command that should be assigned.', null),
         );
     }
 
@@ -63,8 +50,10 @@ class CommandCommand extends GeneratorCommand
     {
         $module = $this->laravel['modules']->findOrFail($this->getModuleName());
 
-        return (new Stub('/command.stub', [
-            'COMMAND_NAME' => $this->getCommandName(),
+        return (new Stub('/request.stub', [
+            'MODULE' => $this->getModuleName(),
+            'NAME' => $this->getFileName(),
+            'MODULE_NAMESPACE' => $this->laravel['modules']->config('namespace'),
             'NAMESPACE' => $this->getClassNamespace($module),
             'CLASS' => $this->getClass()
         ]))->render();
@@ -77,7 +66,7 @@ class CommandCommand extends GeneratorCommand
     {
         $path = $this->laravel['modules']->getModulePath($this->getModuleName());
 
-        $seederPath = $this->laravel['modules']->config('paths.generator.command');
+        $seederPath = $this->laravel['modules']->config('paths.generator.request');
 
         return $path . $seederPath . '/' . $this->getFileName() . '.php';
     }
@@ -91,20 +80,12 @@ class CommandCommand extends GeneratorCommand
     }
 
     /**
-     * @return string
-     */
-    private function getCommandName()
-    {
-        return $this->option('command') ?: 'command:name';
-    }
-
-    /**
      * Get default namespace.
      *
      * @return string
      */
     public function getDefaultNamespace()
     {
-        return 'Console';
+        return 'Http\Requests';
     }
 }
